@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # 加载图像
-image_path = '/Users/yafei/source_code/ai-box/vit-model/src/test.jpg'
+image_path = 'test.jpg'
 print("Loading image...")
 image = cv2.imread(image_path)
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
