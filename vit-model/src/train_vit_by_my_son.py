@@ -36,13 +36,11 @@ class SafeImageFolder(datasets.ImageFolder):
 
         # 跳过以 `._` 开头的文件
         if os.path.basename(path).startswith("._"):
-            print(f"Warning: Skipping macOS metadata file {path}.")
             return None, None
 
         try:
             return super().__getitem__(index)
         except UnidentifiedImageError:
-            print(f"Warning: Unable to load image {path}. Skipping.")
             return None, None
 
 
