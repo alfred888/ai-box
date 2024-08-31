@@ -1,12 +1,15 @@
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms
-from transformers import ViTForImageClassification
+from torchvision.datasets.folder import pil_loader
+from transformers import ViTForImageClassification, ViTConfig
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import time
 from config_path import Config
+from PIL import UnidentifiedImageError
 
 # 设置设备
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -26,14 +29,20 @@ val_transform = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
+# 自定义数据集类以跳过损坏的图像
+class SafeImageFolder(datasets.ImageFolder):
+    def __getitem__(self, index):
+        try:
+            return super().__getitem__(index)
+        except UnidentifiedImageError:
+            print(f"Warning: Unable to load image {self.imgs[index][0]}. Skipping.")
+            return None
+
 if __name__ == '__main__':
     # 加载训练和验证数据集
     config = Config()
-    train_dataset = datasets.ImageFolder(root=config.son_train_dir, transform=train_transform)
-    val_dataset = datasets.ImageFolder(root=config.son_val_dir, transform=val_transform)
-
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
-    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=4)
+    train_dataset = SafeImageFolder(root='data/train', transform=train_transform)
+    val_dataset = SafeImageFolder(root='data/val', transform=val_transform)
 
     # 过滤掉加载失败的样本
     train_dataset.samples = [s for s in train_dataset.samples if s is not None]
@@ -43,7 +52,9 @@ if __name__ == '__main__':
     val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=4)
 
     # 加载预训练的 ViT 模型
-    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224', num_labels=2, ignore_mismatched_sizes=True)
+    local_model_path = '/path/to/local/vit-base-patch16-224'
+    model_config = ViTConfig.from_pretrained(local_model_path, num_labels=2)
+    model = ViTForImageClassification.from_pretrained(local_model_path, config=model_config, ignore_mismatched_sizes=True)
     model = model.to(device)
 
     # 定义损失函数和优化器
@@ -62,6 +73,9 @@ if __name__ == '__main__':
 
         train_loader_tqdm = tqdm(train_loader, desc=f'Training Epoch {epoch+1}')
         for inputs, labels in train_loader_tqdm:
+            if inputs is None or labels is None:
+                continue
+
             inputs = inputs.to(device)
             labels = labels.to(device)
 
@@ -88,6 +102,9 @@ if __name__ == '__main__':
         val_loader_tqdm = tqdm(val_loader, desc=f'Validating Epoch {epoch+1}')
         with torch.no_grad():
             for inputs, labels in val_loader_tqdm:
+                if inputs is None or labels is None:
+                    continue
+
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
