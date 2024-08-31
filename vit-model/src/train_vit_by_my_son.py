@@ -1,10 +1,8 @@
-import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms
-from torchvision.datasets.folder import pil_loader
-from transformers import ViTForImageClassification, ViTConfig
+from transformers import ViTForImageClassification
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import time
@@ -36,25 +34,19 @@ class SafeImageFolder(datasets.ImageFolder):
             return super().__getitem__(index)
         except UnidentifiedImageError:
             print(f"Warning: Unable to load image {self.imgs[index][0]}. Skipping.")
-            return None
+            return None, None
 
 if __name__ == '__main__':
     # 加载训练和验证数据集
     config = Config()
-    train_dataset = SafeImageFolder(root='data/train', transform=train_transform)
-    val_dataset = SafeImageFolder(root='data/val', transform=val_transform)
-
-    # 过滤掉加载失败的样本
-    train_dataset.samples = [s for s in train_dataset.samples if s is not None]
-    val_dataset.samples = [s for s in val_dataset.samples if s is not None]
+    train_dataset = SafeImageFolder(root=config.son_train_dir, transform=train_transform)
+    val_dataset = SafeImageFolder(root=config.son_val_dir, transform=val_transform)
 
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
     val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=4)
 
     # 加载预训练的 ViT 模型
-    local_model_path = '/path/to/local/vit-base-patch16-224'
-    model_config = ViTConfig.from_pretrained(local_model_path, num_labels=2)
-    model = ViTForImageClassification.from_pretrained(local_model_path, config=model_config, ignore_mismatched_sizes=True)
+    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224', num_labels=2, ignore_mismatched_sizes=True)
     model = model.to(device)
 
     # 定义损失函数和优化器
