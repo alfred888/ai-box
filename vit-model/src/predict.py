@@ -1,19 +1,24 @@
 import torch
 from PIL import Image
-from transformers import ViTForImageClassification, ViTFeatureExtractor
+from transformers import ViTForImageClassification, ViTImageProcessor
 from config_path import Config
 
-def predict_image(image_path, model, feature_extractor, device):
+def predict_image(image_path, model, processor, device):
     """
     对图像进行预测
     :param image_path: 图像路径
     :param model: 加载的ViT模型
-    :param feature_extractor: 图像特征提取器
+    :param processor: 图像处理器
     :param device: 设备（CPU或GPU）
     :return: 预测的类别标签
     """
     image = Image.open(image_path)
-    inputs = feature_extractor(images=image, return_tensors="pt")
+
+    # 确保图像是RGB格式
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
+    inputs = processor(images=image, return_tensors="pt")
     inputs = inputs['pixel_values'].to(device)
 
     model.eval()
@@ -34,19 +39,19 @@ if __name__ == "__main__":
     model = ViTForImageClassification.from_pretrained(
         'google/vit-base-patch16-224',
         num_labels=2,
-        ignore_mismatched_sizes=True  # 忽略大小不匹配
+        ignore_mismatched_sizes=True
     )
     model.load_state_dict(torch.load(config.model_save_path, map_location=device))
     model.to(device)
 
-    # 加载特征提取器
-    feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
+    # 加载图像处理器
+    processor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224')
 
     # 使用配置中的test_image_path
     test_image_path = config.test_image_path
 
     # 进行预测
-    predicted_class = predict_image(test_image_path, model, feature_extractor, device)
+    predicted_class = predict_image(test_image_path, model, processor, device)
 
     # 输出预测结果
     class_names = ['son', 'others']  # 根据训练时的类别顺序
