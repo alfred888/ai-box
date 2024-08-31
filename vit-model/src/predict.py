@@ -1,3 +1,4 @@
+import os
 import torch
 from PIL import Image
 from transformers import ViTForImageClassification, ViTImageProcessor
@@ -5,7 +6,7 @@ from config_path import Config
 
 def predict_image(image_path, model, processor, device):
     """
-    对图像进行预测
+    对单张图像进行预测
     :param image_path: 图像路径
     :param model: 加载的ViT模型
     :param processor: 图像处理器
@@ -28,6 +29,22 @@ def predict_image(image_path, model, processor, device):
 
     return predicted_class
 
+def predict_directory_recursive(directory_path, model, processor, device):
+    """
+    对目录及其所有子目录中的图像进行预测
+    :param directory_path: 目录路径
+    :param model: 加载的ViT模型
+    :param processor: 图像处理器
+    :param device: 设备（CPU或GPU）
+    """
+    for dirpath, _, filenames in os.walk(directory_path):
+        for filename in filenames:
+            if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                file_path = os.path.join(dirpath, filename)
+                predicted_class = predict_image(file_path, model, processor, device)
+                class_names = ['son', 'others']  # 根据训练时的类别顺序
+                print(f"Image: {file_path} | Predicted class: {class_names[predicted_class]}")
+
 if __name__ == "__main__":
     # 加载配置
     config = Config()
@@ -47,12 +64,8 @@ if __name__ == "__main__":
     # 加载图像处理器
     processor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224')
 
-    # 使用配置中的test_image_path
-    test_image_path = config.test_image_path
+    # 使用配置中的 test_image_path
+    test_directory_path = config.test_image_path  # 使用Config中的test_image_path
 
-    # 进行预测
-    predicted_class = predict_image(test_image_path, model, processor, device)
-
-    # 输出预测结果
-    class_names = ['son', 'others']  # 根据训练时的类别顺序
-    print(f"The predicted class for the image is: {class_names[predicted_class]}")
+    # 对目录及其所有子目录中的图像进行预测
+    predict_directory_recursive(test_directory_path, model, processor, device)
