@@ -29,3 +29,4 @@ if __name__ == "__main__":
     delete_macos_metadata_files(config.son_val_dir)
     delete_macos_metadata_files(config.others_train_dir)
     delete_macos_metadata_files(config.others_val_dir)
+    delete_macos_metadata_files(config.test_image_path)
