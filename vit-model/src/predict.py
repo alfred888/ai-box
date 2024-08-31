@@ -42,7 +42,7 @@ def predict_directory_recursive(directory_path, model, processor, device):
             if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
                 file_path = os.path.join(dirpath, filename)
                 predicted_class = predict_image(file_path, model, processor, device)
-                class_names = ['son', 'others']  # 根据训练时的类别顺序
+                class_names = ['others', 'son']  # 根据训练时的类别顺序
                 print(f"Image: {file_path} | Predicted class: {class_names[predicted_class]}")
 
 if __name__ == "__main__":
