@@ -35,6 +35,13 @@ if __name__ == '__main__':
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
     val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=4)
 
+    # 过滤掉加载失败的样本
+    train_dataset.samples = [s for s in train_dataset.samples if s is not None]
+    val_dataset.samples = [s for s in val_dataset.samples if s is not None]
+
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
+    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=4)
+
     # 加载预训练的 ViT 模型
     model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224', num_labels=2, ignore_mismatched_sizes=True)
     model = model.to(device)
