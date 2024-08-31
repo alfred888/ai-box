@@ -30,15 +30,19 @@ if __name__ == "__main__":
     # 设置设备
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # 加载预训练的 ViT 模型
-    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224', num_labels=2)
+    # 加载预训练的 ViT 模型，并忽略大小不匹配
+    model = ViTForImageClassification.from_pretrained(
+        'google/vit-base-patch16-224',
+        num_labels=2,
+        ignore_mismatched_sizes=True  # 忽略大小不匹配
+    )
     model.load_state_dict(torch.load(config.model_save_path, map_location=device))
     model.to(device)
 
     # 加载特征提取器
     feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
 
-    # 指定要预测的图像
+    # 使用配置中的test_image_path
     test_image_path = config.test_image_path
 
     # 进行预测
