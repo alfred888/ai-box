@@ -1,5 +1,8 @@
 {
-    "data_home_path": "/Users/yafei/data/ai_identify_human",
-    "datasets_home_path": "/Users/yafei/data/ai_identify_human",
-    "model_home_path": "/Users/yafei/data/ai_identify_human/model"
+    "project_name": "ai_identify_human",
+    "user_home_path": "/Users/yafei/test1",
+    "data_path": "data",
+    "model_path": "model",
+    "3rd_data_path": "3rd_data",
+    "3rd_data_other_faces_path": "other_faces"
 }
