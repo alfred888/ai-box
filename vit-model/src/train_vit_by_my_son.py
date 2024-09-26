@@ -7,7 +7,7 @@ from transformers import ViTForImageClassification
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import time
-from config_path import Config
+from config import Config
 from PIL import UnidentifiedImageError
 
 # 设置设备

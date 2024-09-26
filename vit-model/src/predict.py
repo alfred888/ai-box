@@ -2,7 +2,7 @@ import os
 import torch
 from PIL import Image
 from transformers import ViTForImageClassification, ViTImageProcessor
-from config_path import Config
+from config import Config
 
 def predict_image(image_path, model, processor, device):
     """
@@ -69,3 +69,5 @@ if __name__ == "__main__":
 
     # 对目录及其所有子目录中的图像进行预测
     predict_directory_recursive(test_directory_path, model, processor, device)
+
+    # 定义个函数，求日期的差值
