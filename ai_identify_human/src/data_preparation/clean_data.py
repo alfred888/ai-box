@@ -1,8 +1,7 @@
 # ai_identify_human/src/data_preparation/clean_data.py
 import os
 
-from ai_identify_human.src.config.config import Config
-
+from src.config.config import Config
 
 def delete_macos_metadata_files(root_dir):
     """
