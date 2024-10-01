@@ -69,15 +69,24 @@ def train_and_validate(train_dir, val_dir, model_save_path):
 
     # 加载训练集
     train_dataset = SafeImageFolder(root=train_dir, transform=train_transform)
-    print(f"Classes found in training set: {train_dataset.classes}")
+
+    # 打印训练集的类别名称和顺序
+    print(f"Training dataset classes (order is important!): {train_dataset.classes}")
+    for class_name in train_dataset.classes:
+        class_idx = train_dataset.class_to_idx[class_name]
+        print(f"Class '{class_name}' has index {class_idx}.")
 
     # 加载验证集
     val_dataset = SafeImageFolder(root=val_dir, transform=val_transform)
-    print(f"Classes found in validation set: {val_dataset.classes}")
+
+    # 打印验证集的类别名称和顺序
+    print(f"Validation dataset classes (order is important!): {val_dataset.classes}")
+    for class_name in val_dataset.classes:
+        class_idx = val_dataset.class_to_idx[class_name]
+        print(f"Class '{class_name}' has index {class_idx}.")
 
     # 打印训练集中的类别数量
-    print(f"Classes in training dataset: {train_dataset.classes}")
-    print(f"Number of classes: {len(train_dataset.classes)}")
+    print(f"Number of classes in training dataset: {len(train_dataset.classes)}")
 
     # 训练和验证数据加载器
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4, collate_fn=filter_valid_data)
