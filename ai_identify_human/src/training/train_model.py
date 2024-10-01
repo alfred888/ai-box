@@ -1,7 +1,5 @@
 import os
-import sys
 import time
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -98,6 +96,7 @@ def train_and_validate(train_dir, val_dir, model_save_path):
         num_labels=len(train_dataset.classes),  # 根据类别数量动态设置输出维度
         ignore_mismatched_sizes=True
     )
+
     # 冻结 ViT 的前几个层，只训练分类器部分
     for param in model.vit.parameters():
         param.requires_grad = False
@@ -106,7 +105,7 @@ def train_and_validate(train_dir, val_dir, model_save_path):
 
     # 定义损失函数、优化器和学习率调度器
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.01)
+    optimizer = optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-4, weight_decay=0.01)
     scheduler = CosineAnnealingLR(optimizer, T_max=10, eta_min=1e-6)
     scaler = GradScaler()
 
