@@ -7,7 +7,7 @@ from transformers import ViTForImageClassification
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import time
-from ai_identify_human.src.config.config import Config
+from ..config.config import Config
 from PIL import UnidentifiedImageError
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.cuda.amp import autocast, GradScaler
