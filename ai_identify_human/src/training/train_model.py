@@ -98,6 +98,10 @@ def train_and_validate(train_dir, val_dir, model_save_path):
         num_labels=len(train_dataset.classes),  # 根据类别数量动态设置输出维度
         ignore_mismatched_sizes=True
     )
+    # 冻结 ViT 的前几个层，只训练分类器部分
+    for param in model.vit.parameters():
+        param.requires_grad = False
+
     model = model.to(device)
 
     # 定义损失函数、优化器和学习率调度器
