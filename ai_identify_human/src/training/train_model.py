@@ -14,7 +14,7 @@ from torch.cuda.amp import autocast, GradScaler
 import logging
 logging.getLogger("urllib3").setLevel(logging.ERROR)
 
-# 设置设备
+# 设置1设备
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 数据预处理，增加更多的数据增强策略
