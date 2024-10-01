@@ -14,7 +14,7 @@ class Predictor:
 
         # 加载训练好的模型
         model_path = os.path.join(self.config.model_path, 'final_model.pth')
-        print(f"Loading model from {model_path}")
+        print(f"-----------------Loading model from {model_path}")
         if os.path.exists(model_path):
             # 使用通用的分类模型加载
             self.model = ViTForImageClassification.from_pretrained(
