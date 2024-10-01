@@ -9,17 +9,15 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from tqdm import tqdm
 from transformers import ViTForImageClassification
-
-# 添加项目根目录到sys.path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from src.config.config import Config
 from PIL import UnidentifiedImageError
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.cuda.amp import autocast, GradScaler
 import logging
+
 logging.getLogger("urllib3").setLevel(logging.ERROR)
 
-# 设置1设备
+# 设置设备
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 数据预处理，增加更多的数据增强策略
@@ -41,7 +39,7 @@ val_transform = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-# 自定义数据集类以跳过损坏的图像
+
 # 自定义数据集类以跳过损坏的图像并打印出有问题的文件路径
 class SafeImageFolder(datasets.ImageFolder):
     def __getitem__(self, index):
@@ -55,6 +53,7 @@ class SafeImageFolder(datasets.ImageFolder):
             print(f"Error loading image: {path}")  # 打印出有问题的文件路径
             return None, None
 
+
 def filter_valid_data(batch):
     """过滤掉 None 的数据项"""
     batch = list(filter(lambda x: x[0] is not None and x[1] is not None, batch))
@@ -62,23 +61,29 @@ def filter_valid_data(batch):
         return None
     return torch.utils.data.dataloader.default_collate(batch)
 
-def train_and_validate(person_name, train_dir, val_dir, others_train_dir, others_val_dir, model_save_path):
+
+def train_and_validate(train_dir, val_dir, model_save_path):
     # 打印出加载的训练集和验证集目录路径
     print(f"Loading training dataset from: {train_dir}")
     print(f"Loading validation dataset from: {val_dir}")
 
-    # 加载训练集（父目录为类名称）
+    # 加载训练集
     train_dataset = SafeImageFolder(root=train_dir, transform=train_transform)
     print(f"Classes found in training set: {train_dataset.classes}")
 
-    # 加载验证集（父目录为类名称）
+    # 加载验证集
     val_dataset = SafeImageFolder(root=val_dir, transform=val_transform)
     print(f"Classes found in validation set: {val_dataset.classes}")
+
+    # 打印训练集中的类别数量
+    print(f"Classes in training dataset: {train_dataset.classes}")
+    print(f"Number of classes: {len(train_dataset.classes)}")
 
     # 训练和验证数据加载器
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4, collate_fn=filter_valid_data)
     val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=4, collate_fn=filter_valid_data)
 
+    # 模型初始化
     model = ViTForImageClassification.from_pretrained(
         'google/vit-base-patch16-224',
         num_labels=len(train_dataset.classes),  # 根据类别数量动态设置输出维度
@@ -86,10 +91,11 @@ def train_and_validate(person_name, train_dir, val_dir, others_train_dir, others
     )
     model = model.to(device)
 
+    # 定义损失函数、优化器和学习率调度器
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.01)  # 使用 AdamW 优化器
-    scheduler = CosineAnnealingLR(optimizer, T_max=10, eta_min=1e-6)  # 余弦退火学习率调度器
-    scaler = GradScaler()  # 混合精度缩放器
+    optimizer = optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.01)
+    scheduler = CosineAnnealingLR(optimizer, T_max=10, eta_min=1e-6)
+    scaler = GradScaler()
 
     num_epochs = 10
     best_val_loss = float('inf')
@@ -98,7 +104,7 @@ def train_and_validate(person_name, train_dir, val_dir, others_train_dir, others
 
     for epoch in range(num_epochs):
         start_time = time.time()
-        print(f'Epoch {epoch + 1}/{num_epochs} for {person_name}')
+        print(f'Epoch {epoch + 1}/{num_epochs}')
 
         # 训练阶段
         model.train()
@@ -185,17 +191,20 @@ def train_and_validate(person_name, train_dir, val_dir, others_train_dir, others
             print("Early stopping triggered.")
             break
 
+
 if __name__ == '__main__':
     config = Config()
-    for person in config.persons:
-        person_train_dir = os.path.join(config.data_path, person)
-        person_val_dir = os.path.join(config.data_path, person)
-        model_save_path = os.path.join(config.model_path, f'{person}_model.pth')
-        train_and_validate(
-            person,
-            person_train_dir,
-            person_val_dir,
-            config.third_party_other_faces_path + "/train",
-            config.third_party_other_faces_path + "/validate",
-            model_save_path
-        )
+
+    # 设置训练和验证集路径
+    train_dir = os.path.join(config.data_path, 'train')
+    val_dir = os.path.join(config.data_path, 'val')
+
+    # 保存模型路径
+    model_save_path = os.path.join(config.model_path, 'final_model.pth')
+
+    # 调用训练和验证函数
+    train_and_validate(
+        train_dir=train_dir,
+        val_dir=val_dir,
+        model_save_path=model_save_path
+    )
