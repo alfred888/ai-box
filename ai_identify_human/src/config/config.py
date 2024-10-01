@@ -6,7 +6,7 @@ from enum import Enum
 class Persons(Enum):
     YAFEI = "Yafei"
     XIAOMI = "Xiaomi"
-    TIGER = "Xiaohu"
+    XIAOHU = "Xiaohu"
 
 
 class Config:
