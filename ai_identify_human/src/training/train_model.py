@@ -1,13 +1,18 @@
 import os
+import sys
+import time
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision import datasets, transforms
-from transformers import ViTForImageClassification
 from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 from tqdm import tqdm
-import time
-from ai_identify_human.src.config.config import Config
+from transformers import ViTForImageClassification
+
+# 添加项目根目录到sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from src.config.config import Config
 from PIL import UnidentifiedImageError
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.cuda.amp import autocast, GradScaler
