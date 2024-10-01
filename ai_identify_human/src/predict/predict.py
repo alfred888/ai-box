@@ -2,7 +2,7 @@ import os
 import torch
 from transformers import ViTForImageClassification, ViTImageProcessor
 from PIL import Image
-from ai_identify_human.src.config.config import Config
+from src.config.config import Config
 
 class Predictor:
     def __init__(self, config):
