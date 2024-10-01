@@ -4,6 +4,7 @@ from transformers import ViTForImageClassification, ViTImageProcessor
 from PIL import Image
 from src.config.config import Config
 
+
 class Predictor:
     def __init__(self, config):
         # 初始化
@@ -22,7 +23,14 @@ class Predictor:
                 ignore_mismatched_sizes=True
             )
             # 加载模型参数
-            self.model.load_state_dict(torch.load(model_path, map_location=self.device)['model_state_dict'], strict=False)
+            model_state_dict = torch.load(model_path, map_location=self.device)
+            if 'model_state_dict' in model_state_dict:
+                self.model.load_state_dict(model_state_dict['model_state_dict'], strict=False)
+            else:
+                self.model.load_state_dict(model_state_dict, strict=False)
+
+            # 替换分类器层
+            self.model.classifier = torch.nn.Linear(self.model.classifier.in_features, len(self.config.persons) + 1)
             self.model.to(self.device)
             self.model.eval()
         else:
@@ -48,7 +56,7 @@ class Predictor:
 
         # 找到预测概率最高的类别
         predicted_index = torch.argmax(probs, dim=-1).item()
-        categories = self.config.persons + ['Others']  # 全部类别列表
+        categories = list(self.config.persons) + ['Others']  # 全部类别列表
         if predicted_index < len(categories):
             predicted_person = categories[predicted_index]
             return predicted_person
@@ -64,10 +72,10 @@ class Predictor:
                 result = self.predict(file_path)
                 print(f"Image: {file_name}, Predicted person: {result}")
 
+
 if __name__ == '__main__':
     # 加载配置
     config = Config()
-    config.persons = config.persons
 
     # 初始化预测器
     predictor = Predictor(config)
