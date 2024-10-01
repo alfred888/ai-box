@@ -63,11 +63,17 @@ def filter_valid_data(batch):
     return torch.utils.data.dataloader.default_collate(batch)
 
 def train_and_validate(person_name, train_dir, val_dir, others_train_dir, others_val_dir, model_save_path):
+    # 打印出加载的训练集和验证集目录路径
+    print(f"Loading training dataset from: {train_dir}")
+    print(f"Loading validation dataset from: {val_dir}")
+
     # 加载训练集（父目录为类名称）
     train_dataset = SafeImageFolder(root=train_dir, transform=train_transform)
+    print(f"Classes found in training set: {train_dataset.classes}")
 
     # 加载验证集（父目录为类名称）
     val_dataset = SafeImageFolder(root=val_dir, transform=val_transform)
+    print(f"Classes found in validation set: {val_dataset.classes}")
 
     # 训练和验证数据加载器
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4, collate_fn=filter_valid_data)
