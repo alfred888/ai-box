@@ -37,7 +37,6 @@ val_transform = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-
 # 自定义数据集类以跳过损坏的图像并打印出有问题的文件路径
 class SafeImageFolder(datasets.ImageFolder):
     def __getitem__(self, index):
@@ -51,14 +50,12 @@ class SafeImageFolder(datasets.ImageFolder):
             print(f"Error loading image: {path}")  # 打印出有问题的文件路径
             return None, None
 
-
 def filter_valid_data(batch):
     """过滤掉 None 的数据项"""
     batch = list(filter(lambda x: x[0] is not None and x[1] is not None, batch))
     if len(batch) == 0:
         return None
     return torch.utils.data.dataloader.default_collate(batch)
-
 
 def train_and_validate(train_dir, val_dir, model_save_path):
     # 打印出加载的训练集和验证集目录路径
@@ -97,7 +94,7 @@ def train_and_validate(train_dir, val_dir, model_save_path):
         ignore_mismatched_sizes=True
     )
 
-    # 冻结 ViT 的前几个层，只训练分类器部分
+    # 冻结 ViT 的特征提取部分，只训练分类器部分
     for param in model.vit.parameters():
         param.requires_grad = False
 
@@ -202,7 +199,6 @@ def train_and_validate(train_dir, val_dir, model_save_path):
         if patience_counter >= early_stopping_patience:
             print("Early stopping triggered.")
             break
-
 
 if __name__ == '__main__':
     config = Config()
