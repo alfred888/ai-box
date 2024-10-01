@@ -42,14 +42,17 @@ val_transform = transforms.Compose([
 ])
 
 # 自定义数据集类以跳过损坏的图像
+# 自定义数据集类以跳过损坏的图像并打印出有问题的文件路径
 class SafeImageFolder(datasets.ImageFolder):
     def __getitem__(self, index):
         path, target = self.samples[index]
         if os.path.basename(path).startswith("._"):
+            print(f"Skipping hidden file: {path}")
             return None, None
         try:
             return super().__getitem__(index)
         except UnidentifiedImageError:
+            print(f"Error loading image: {path}")  # 打印出有问题的文件路径
             return None, None
 
 def filter_valid_data(batch):
